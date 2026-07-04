@@ -2,7 +2,6 @@
 
 class Node {
 public:
-    Node();
     void begin();
     void loop();
 };

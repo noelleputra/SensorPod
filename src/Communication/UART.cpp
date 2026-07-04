@@ -13,7 +13,7 @@ bool UART::requestReceived()
 }
 void UART::sendSoil(int soil1,int soil2)
 {
-    Serial.print("SOIL:");
+    Serial.print("Sensor Pod:");
     Serial.print(soil1);
     Serial.print(",");
     Serial.println(soil2);

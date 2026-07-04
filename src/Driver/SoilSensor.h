@@ -5,13 +5,12 @@
 class SoilSensor
 {
 public:
-    SoilSensor(uint8_t analogPin,
-               uint8_t powerPin);
-
+    SoilSensor(uint8_t analogPin, uint8_t powerPin);
     void begin();
-    int readPercent();
-
+    int readRaw();
+    uint8_t readPercent();
+    
 private:
-    uint8_t analogPin;
-    uint8_t powerPin;
+    const uint8_t analogPin;
+    const uint8_t powerPin;
 };
