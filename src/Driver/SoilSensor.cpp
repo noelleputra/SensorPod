@@ -23,13 +23,13 @@ int SoilSensor::readRaw()
     digitalWrite(powerPin, HIGH);
     delay(Config::SENSOR_WARMUP_MS);
     long total = 0;
-    for (uint8_t i = 0; i < Config::SENSOR_SAMPLES; i++)
+    for (uint8_t i = 0; i < Config::SENSOR_SAMPLE; i++)
     {
         total += analogRead(analogPin);
         delay(5);
     }
     digitalWrite(powerPin, LOW);
-    return total / Config::SENSOR_SAMPLES;
+    return total / Config::SENSOR_SAMPLE;
 }
 
 uint8_t SoilSensor::readPercent()
@@ -37,8 +37,8 @@ uint8_t SoilSensor::readPercent()
     const int raw = readRaw();
     int percent = map(
         raw,
-        Config::SOIL_AIR_RAW,
-        Config::SOIL_WATER_RAW,
+        Config::ADC_DRY,
+        Config::ADC_WET,
         0,
         100);
     percent = constrain(percent, 0, 100);

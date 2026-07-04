@@ -1,40 +1,40 @@
 #include "Node.h"
+#include "Debug.h"
+#include "Config.h"
 
-#include "../Driver/SoilSensor.h"
-#include "../Communication/UART.h"
-#include "../../include/Pins.h"
-
-SoilSensor soil1(
-    Pins::Soil1,
-    Pins::SoilPower1);
-    
-SoilSensor soil2(
-    Pins::Soil2,
-    Pins::SoilPower2);
-
-UART uart;
+Node::Node()
+    : soil1(Pins::Soil1, Pins::SoilPower1),
+      soil2(Pins::Soil2, Pins::SoilPower2)
+{
+}
 
 void Node::begin()
 {
     soil1.begin();
     soil2.begin();
-    uart.begin(9600);
+    uart.begin(Config::UART_BAUD);
 }
+
 void Node::loop()
 {
+    if (millis() - lastRead >= Config::SENSOR_INTERVAL_MS)
+    {
+        lastRead = millis();
+        soil1Value = soil1.readPercent();
+        soil2Value = soil2.readPercent();
+
+        DEBUG_PRINT(F("S1: "));
+        DEBUG_PRINT(soil1Value);
+        DEBUG_PRINT(F(" | S2: "));
+        DEBUG_PRINTLN(soil2Value);
+    }
+
     if (uart.requestReceived())
     {
-        uint8_t soil1Value = soil1.readPercent();
-        uint8_t soil2Value = soil2.readPercent();
-
-        Serial.print(F("Soil 1 : "));
-        Serial.print(soil1Value);
-        Serial.println(F("%"));
-
-        Serial.print(F("Soil 2 : "));
-        Serial.print(soil2Value);
-        Serial.println(F("%"));
-
-        uart.sendSoil(soil1Value, soil2Value);
+        uart.sendSoil(
+            soil1Value,
+            soil2Value
+        );
     }
 }
+
