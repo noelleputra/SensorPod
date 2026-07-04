@@ -2,7 +2,7 @@
 
 #pragma once
 
-#define DEBUG_ENABLED 1 // 1 for enabled, 0 for disabled
+#define DEBUG_ENABLED 0 // 1 for enabled, 0 for disabled
 
 #if DEBUG_ENABLED
 
