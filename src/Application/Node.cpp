@@ -1,6 +1,7 @@
 #include "Node.h"
 #include "Debug.h"
 #include "Config.h"
+#include <avr/wdt.h>
 
 Node::Node()
     : soil1(Pins::Soil1, Pins::SoilPower1),
@@ -10,6 +11,7 @@ Node::Node()
 
 void Node::begin()
 {
+    wdt_enable(WDTO_8S);
     soil1.begin();
     soil2.begin();
     uart.begin(Config::UART_BAUD);
@@ -17,9 +19,11 @@ void Node::begin()
 
 void Node::loop()
 {
-    if (millis() - lastRead >= Config::SENSOR_INTERVAL_MS)
+    const uint32_t now = millis();
+
+    if (now - lastRead >= Config::SENSOR_INTERVAL_MS)
     {
-        lastRead = millis();
+        lastRead = now;
         soil1Value = soil1.readPercent();
         soil2Value = soil2.readPercent();
 
@@ -31,10 +35,9 @@ void Node::loop()
 
     if (uart.requestReceived())
     {
-        uart.sendSoil(
-            soil1Value,
-            soil2Value
-        );
+        uart.sendSoil(soil1Value, soil2Value);
     }
+
+    wdt_reset();
 }
 
