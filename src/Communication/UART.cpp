@@ -1,5 +1,8 @@
 #include "UART.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <limits.h>
 #include "Config.h"
 #include "Protocol.h"
 
@@ -55,7 +58,7 @@ static bool isRequestForThisNode(const char *line)
 bool UART::requestReceived()
 {
     static char line[Config::UART_BUFFER_SIZE];
-    static uint8_t index = 0;
+    static size_t index = 0;
 
     while (Serial.available())
     {
@@ -72,7 +75,7 @@ bool UART::requestReceived()
             return isRequestForThisNode(line);
         }
 
-        if (index < Config::UART_BUFFER_SIZE - 1)
+        if (index < static_cast<size_t>(Config::UART_BUFFER_SIZE) - 1u)
         {
             line[index++] = incoming;
         }

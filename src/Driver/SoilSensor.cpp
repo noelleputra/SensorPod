@@ -1,6 +1,6 @@
 #include "SoilSensor.h"
 
-#include "../../include/Config.h"
+#include "Config.h"
 
 SoilSensor::SoilSensor(
     uint8_t analogPin,
@@ -25,10 +25,10 @@ int SoilSensor::readRaw()
     delay(Config::SENSOR_WARMUP_MS);
 
     uint16_t samples[Config::SENSOR_SAMPLE] = {0};
-    for (uint8_t i = 0; i < Config::SENSOR_SAMPLE; ++i)
+    for (size_t i = 0; i < static_cast<size_t>(Config::SENSOR_SAMPLE); ++i)
     {
         samples[i] = static_cast<uint16_t>(analogRead(analogPin));
-        if (i < Config::SENSOR_SAMPLE - 1)
+        if (i < static_cast<size_t>(Config::SENSOR_SAMPLE) - 1u)
         {
             delay(Config::SENSOR_SAMPLE_DELAY_MS);
         }
@@ -37,9 +37,9 @@ int SoilSensor::readRaw()
     digitalWrite(powerPin, LOW);
 
     // Discard the lowest and highest values to reduce noise influence.
-    for (uint8_t i = 0; i < Config::SENSOR_SAMPLE - 1; ++i)
+    for (size_t i = 0; i < static_cast<size_t>(Config::SENSOR_SAMPLE) - 1u; ++i)
     {
-        for (uint8_t j = i + 1; j < Config::SENSOR_SAMPLE; ++j)
+        for (size_t j = i + 1u; j < static_cast<size_t>(Config::SENSOR_SAMPLE); ++j)
         {
             if (samples[j] < samples[i])
             {
@@ -51,12 +51,12 @@ int SoilSensor::readRaw()
     }
 
     uint32_t total = 0;
-    for (uint8_t i = Config::SENSOR_DISCARD_LOW; i < Config::SENSOR_SAMPLE - Config::SENSOR_DISCARD_HIGH; ++i)
+    for (size_t i = static_cast<size_t>(Config::SENSOR_DISCARD_LOW); i < static_cast<size_t>(Config::SENSOR_SAMPLE) - static_cast<size_t>(Config::SENSOR_DISCARD_HIGH); ++i)
     {
         total += samples[i];
     }
 
-    const uint8_t validCount = Config::SENSOR_SAMPLE - Config::SENSOR_DISCARD_LOW - Config::SENSOR_DISCARD_HIGH;
+    const size_t validCount = static_cast<size_t>(Config::SENSOR_SAMPLE) - static_cast<size_t>(Config::SENSOR_DISCARD_LOW) - static_cast<size_t>(Config::SENSOR_DISCARD_HIGH);
     return static_cast<int>(total / validCount);
 }
 
