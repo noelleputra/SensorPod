@@ -23,15 +23,12 @@ void Node::loop()
     {
         soil1Value = soil1.readPercent();
         soil2Value = soil2.readPercent();
-
-        DEBUG_PRINT(F("Request diterima. S1: "));
+        DEBUG_PRINT(F("Request Received. S1: "));
         DEBUG_PRINT(soil1Value);
         DEBUG_PRINT(F(" | S2: "));
         DEBUG_PRINTLN(soil2Value);
-
         uart.sendPacket(soil1Value, soil2Value);
     }
-
     wdt_reset();
 }
 

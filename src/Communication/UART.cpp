@@ -1,16 +1,24 @@
 #include "UART.h"
 
+#include "Config.h"
+#include "Protocol.h"
+
 void UART::begin(long baud, uint8_t dirPin)
 {
     this->dirPin = dirPin;
-    pinMode(dirPin, OUTPUT);
-    setReceiveMode();
+
+    if (dirPin != Config::NO_DIRECTION_PIN)
+    {
+        pinMode(dirPin, OUTPUT);
+        setReceiveMode();
+    }
+
     Serial.begin(baud);
 }
 
 void UART::setTransmitMode()
 {
-    if (dirPin != 255)
+    if (dirPin != Config::NO_DIRECTION_PIN)
     {
         digitalWrite(dirPin, HIGH);
     }
@@ -18,7 +26,7 @@ void UART::setTransmitMode()
 
 void UART::setReceiveMode()
 {
-    if (dirPin != 255)
+    if (dirPin != Config::NO_DIRECTION_PIN)
     {
         digitalWrite(dirPin, LOW);
     }
@@ -26,34 +34,38 @@ void UART::setReceiveMode()
 
 bool UART::requestReceived()
 {
-    static char line[32];
+    static char line[Config::UART_BUFFER_SIZE];
     static uint8_t index = 0;
 
-    while (Serial.available() > 0)
+    while (Serial.available())
     {
-        const char incoming = static_cast<char>(Serial.read());
-        if (incoming == '\r')
-        {
-            continue;
-        }
+        char incoming = Serial.read();
 
-        if (incoming == '\n')
+        if (incoming == '\r' || incoming == '\n')
         {
+            if (index == 0)
+                continue;
+
             line[index] = '\0';
             index = 0;
-            if (strcmp(line, "R") == 0 || strcmp(line, "REQ") == 0)
-            {
-                return true;
-            }
-            return false;
+
+            return strcmp(line, Protocol::REQUEST) == 0;
         }
 
-        if (index < sizeof(line) - 1)
+        if (index < Config::UART_BUFFER_SIZE - 1)
         {
             line[index++] = incoming;
+
+            // support single-byte request 'R' without newline / carriage return
+            if (index == 1 && line[0] == Protocol::REQUEST[0] && !Serial.available())
+            {
+                index = 0;
+                return true;
+            }
         }
         else
         {
+            // Overflow protection
             index = 0;
         }
     }
@@ -64,12 +76,17 @@ bool UART::requestReceived()
 void UART::sendPacket(uint8_t soil1, uint8_t soil2)
 {
     setTransmitMode();
-    delayMicroseconds(10);
-    Serial.print("SensorPod:");
+
+    delayMicroseconds(Config::RS485_TURNAROUND_US);
+
+    Serial.print(Protocol::PREFIX);
     Serial.print(soil1);
-    Serial.print(',');
+    Serial.write(',');
     Serial.println(soil2);
+
     Serial.flush();
-    delayMicroseconds(10);
+
+    delayMicroseconds(Config::RS485_TURNAROUND_US);
+
     setReceiveMode();
 }
