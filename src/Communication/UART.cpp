@@ -1,53 +1,75 @@
 #include "UART.h"
 
-void UART::begin(long baud)
+void UART::begin(long baud, uint8_t dirPin)
 {
+    this->dirPin = dirPin;
+    pinMode(dirPin, OUTPUT);
+    setReceiveMode();
     Serial.begin(baud);
-    delay(50);
-    Serial.println(F("UART ready"));
+}
+
+void UART::setTransmitMode()
+{
+    if (dirPin != 255)
+    {
+        digitalWrite(dirPin, HIGH);
+    }
+}
+
+void UART::setReceiveMode()
+{
+    if (dirPin != 255)
+    {
+        digitalWrite(dirPin, LOW);
+    }
 }
 
 bool UART::requestReceived()
 {
-    static String line;
+    static char line[32];
+    static uint8_t index = 0;
 
     while (Serial.available() > 0)
     {
         const char incoming = static_cast<char>(Serial.read());
-        // debug: show incoming byte as printable and hex
-        if (incoming >= ' ' && incoming <= '~')
+        if (incoming == '\r')
         {
-            Serial.print(F("RX: "));
-            Serial.println(incoming);
+            continue;
+        }
+
+        if (incoming == '\n')
+        {
+            line[index] = '\0';
+            index = 0;
+            if (strcmp(line, "R") == 0 || strcmp(line, "REQ") == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        if (index < sizeof(line) - 1)
+        {
+            line[index++] = incoming;
         }
         else
         {
-            Serial.print(F("RX (hex): 0x"));
-            if ((uint8_t)incoming < 16) Serial.print('0');
-            Serial.println((uint8_t)incoming, HEX);
+            index = 0;
         }
-
-        if (incoming == '\n' || incoming == '\r')
-        {
-            line.trim();
-            Serial.print(F("Line received: "));
-            Serial.println(line);
-            const bool matched = line.equalsIgnoreCase("R") || line.equalsIgnoreCase("REQ");
-            line.clear();
-            return matched;
-        }
-
-        line += incoming;
     }
 
     return false;
 }
 
-void UART::sendSoil(int soil1, int soil2)
+void UART::sendPacket(uint8_t soil1, uint8_t soil2)
 {
-    Serial.print(F("SensorPod:"));
+    setTransmitMode();
+    delayMicroseconds(10);
+    Serial.print("SensorPod:");
     Serial.print(soil1);
     Serial.print(',');
     Serial.println(soil2);
     Serial.flush();
+    delayMicroseconds(10);
+    setReceiveMode();
 }

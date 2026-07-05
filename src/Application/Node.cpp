@@ -14,9 +14,7 @@ void Node::begin()
     wdt_enable(WDTO_8S);
     soil1.begin();
     soil2.begin();
-    uart.begin(Config::UART_BAUD);
-    delay(50);
-    Serial.println(F("SensorPod Node started"));
+    uart.begin(Config::UART_BAUD, Pins::RS485Dir);
 }
 
 void Node::loop()
@@ -31,7 +29,7 @@ void Node::loop()
         DEBUG_PRINT(F(" | S2: "));
         DEBUG_PRINTLN(soil2Value);
 
-        uart.sendSoil(soil1Value, soil2Value);
+        uart.sendPacket(soil1Value, soil2Value);
     }
 
     wdt_reset();

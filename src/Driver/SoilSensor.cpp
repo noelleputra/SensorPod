@@ -24,18 +24,40 @@ int SoilSensor::readRaw()
     digitalWrite(powerPin, HIGH);
     delay(Config::SENSOR_WARMUP_MS);
 
-    long total = 0;
+    uint16_t samples[Config::SENSOR_SAMPLE] = {0};
     for (uint8_t i = 0; i < Config::SENSOR_SAMPLE; ++i)
     {
-        total += analogRead(analogPin);
+        samples[i] = static_cast<uint16_t>(analogRead(analogPin));
         if (i < Config::SENSOR_SAMPLE - 1)
         {
-            delay(5);
+            delay(Config::SENSOR_SAMPLE_DELAY_MS);
         }
     }
 
     digitalWrite(powerPin, LOW);
-    return total / Config::SENSOR_SAMPLE;
+
+    // Discard the lowest and highest values to reduce noise influence.
+    for (uint8_t i = 0; i < Config::SENSOR_SAMPLE - 1; ++i)
+    {
+        for (uint8_t j = i + 1; j < Config::SENSOR_SAMPLE; ++j)
+        {
+            if (samples[j] < samples[i])
+            {
+                uint16_t temp = samples[i];
+                samples[i] = samples[j];
+                samples[j] = temp;
+            }
+        }
+    }
+
+    uint32_t total = 0;
+    for (uint8_t i = Config::SENSOR_DISCARD_LOW; i < Config::SENSOR_SAMPLE - Config::SENSOR_DISCARD_HIGH; ++i)
+    {
+        total += samples[i];
+    }
+
+    const uint8_t validCount = Config::SENSOR_SAMPLE - Config::SENSOR_DISCARD_LOW - Config::SENSOR_DISCARD_HIGH;
+    return static_cast<int>(total / validCount);
 }
 
 uint8_t SoilSensor::readPercent()
