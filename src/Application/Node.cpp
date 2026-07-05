@@ -19,22 +19,16 @@ void Node::begin()
 
 void Node::loop()
 {
-    const uint32_t now = millis();
-
-    if (now - lastRead >= Config::SENSOR_INTERVAL_MS)
+    if (uart.requestReceived())
     {
-        lastRead = now;
         soil1Value = soil1.readPercent();
         soil2Value = soil2.readPercent();
 
-        DEBUG_PRINT(F("S1: "));
+        DEBUG_PRINT(F("Request diterima. S1: "));
         DEBUG_PRINT(soil1Value);
         DEBUG_PRINT(F(" | S2: "));
         DEBUG_PRINTLN(soil2Value);
-    }
 
-    if (uart.requestReceived())
-    {
         uart.sendSoil(soil1Value, soil2Value);
     }
 

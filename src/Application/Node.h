@@ -18,6 +18,4 @@ private:
 
     uint8_t soil1Value = 0;
     uint8_t soil2Value = 0;
-
-    uint32_t lastRead = 0;
 };
