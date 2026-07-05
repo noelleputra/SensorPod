@@ -32,6 +32,26 @@ void UART::setReceiveMode()
     }
 }
 
+static bool isRequestForThisNode(const char *line)
+{
+    if (line[0] != Protocol::REQUEST[0])
+        return false;
+
+    // Require R<ID> format; reject plain R broadcast or incomplete commands.
+    if (line[1] == '\0')
+        return false;
+
+    uint8_t requestedId = 0;
+    for (const char *p = &line[1]; *p != '\0'; ++p)
+    {
+        if (*p < '0' || *p > '9')
+            return false;
+        requestedId = requestedId * 10 + static_cast<uint8_t>(*p - '0');
+    }
+
+    return requestedId == Config::NODE_ID;
+}
+
 bool UART::requestReceived()
 {
     static char line[Config::UART_BUFFER_SIZE];
@@ -49,19 +69,12 @@ bool UART::requestReceived()
             line[index] = '\0';
             index = 0;
 
-            return strcmp(line, Protocol::REQUEST) == 0;
+            return isRequestForThisNode(line);
         }
 
         if (index < Config::UART_BUFFER_SIZE - 1)
         {
             line[index++] = incoming;
-
-            // support single-byte request 'R' without newline / carriage return
-            if (index == 1 && line[0] == Protocol::REQUEST[0] && !Serial.available())
-            {
-                index = 0;
-                return true;
-            }
         }
         else
         {
@@ -80,6 +93,8 @@ void UART::sendPacket(uint8_t soil1, uint8_t soil2)
     delayMicroseconds(Config::RS485_TURNAROUND_US);
 
     Serial.print(Protocol::PREFIX);
+    Serial.print(Config::NODE_ID);
+    Serial.write(':');
     Serial.print(soil1);
     Serial.write(',');
     Serial.println(soil2);

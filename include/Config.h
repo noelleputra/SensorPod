@@ -4,6 +4,7 @@
 
 namespace Config
 {
+    constexpr uint8_t NODE_ID = 2;
     // ==========================
     // UART
     // ==========================
