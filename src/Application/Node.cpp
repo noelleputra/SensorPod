@@ -15,6 +15,8 @@ void Node::begin()
     soil1.begin();
     soil2.begin();
     uart.begin(Config::UART_BAUD);
+    delay(50);
+    Serial.println(F("SensorPod Node started"));
 }
 
 void Node::loop()

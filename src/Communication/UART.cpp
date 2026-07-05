@@ -3,19 +3,38 @@
 void UART::begin(long baud)
 {
     Serial.begin(baud);
+    delay(50);
+    Serial.println(F("UART ready"));
 }
 
 bool UART::requestReceived()
 {
-    String line;
+    static String line;
 
     while (Serial.available() > 0)
     {
         const char incoming = static_cast<char>(Serial.read());
+        // debug: show incoming byte as printable and hex
+        if (incoming >= ' ' && incoming <= '~')
+        {
+            Serial.print(F("RX: "));
+            Serial.println(incoming);
+        }
+        else
+        {
+            Serial.print(F("RX (hex): 0x"));
+            if ((uint8_t)incoming < 16) Serial.print('0');
+            Serial.println((uint8_t)incoming, HEX);
+        }
+
         if (incoming == '\n' || incoming == '\r')
         {
             line.trim();
-            return line.equalsIgnoreCase("R") || line.equalsIgnoreCase("REQ");
+            Serial.print(F("Line received: "));
+            Serial.println(line);
+            const bool matched = line.equalsIgnoreCase("R") || line.equalsIgnoreCase("REQ");
+            line.clear();
+            return matched;
         }
 
         line += incoming;
