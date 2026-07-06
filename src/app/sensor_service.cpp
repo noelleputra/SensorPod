@@ -1,17 +1,18 @@
 #include "sensor_service.h"
-#include "debug.h"
-#include "config.h"
+#include "config/debug.h"
+#include "config/config.h"
+#include "config/pin.h"
 
 SensorService::SensorService()
-    : soil1(config::pins::SOIL1, config::pins::SOIL_POWER),
-      soil2(config::pins::SOIL2, config::pins::SOIL_POWER)
+    : soil1(pin::SOIL1, pin::SOIL_POWER),
+      soil2(pin::SOIL2, pin::SOIL_POWER)
 {
 }
 
 void SensorService::begin() {
     soil1.begin();
     soil2.begin();
-    rs485.begin(config::UART_BAUD, config::pins::RS485Dir);
+    rs485.begin(config::UART_BAUD, pin::RS485Dir);
 }
 
 void SensorService::loop() {

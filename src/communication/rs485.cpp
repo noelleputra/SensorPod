@@ -1,9 +1,10 @@
 #include "rs485.h"
-#include "config.h"
+#include "config/config.h"
+#include "config/protocol.h"
 
 namespace {
     bool isRequestForThisNode(const char *line) {
-        if (line[0] != config::protocol::REQUEST[0] || line[1] == '\0') {
+        if (line[0] != protocol::REQUEST[0] || line[1] == '\0') {
             return false;
         }
         uint8_t requestedId = 0;
@@ -79,7 +80,7 @@ void Rs485::sendPacket(uint8_t soil1, uint8_t soil2) {
     setTransmitMode();
     delayMicroseconds(config::RS485_TURNAROUND_US);
 
-    Serial.print(config::protocol::PREFIX);
+    Serial.print(protocol::PREFIX);
     Serial.print(config::NODE_ID);
     Serial.write(':');
     Serial.print(soil1);

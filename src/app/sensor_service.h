@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "drivers/soil_sensor.h"
 #include "communication/rs485.h"
-#include "config.h"
 
 class SensorService
 {
