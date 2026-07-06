@@ -1,5 +1,4 @@
 #include "sensor_service.h"
-#include "config/debug.h"
 #include "config/config.h"
 #include "config/pin.h"
 

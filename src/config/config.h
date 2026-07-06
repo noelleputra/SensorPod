@@ -9,3 +9,15 @@ namespace config {
     constexpr uint8_t NO_DIRECTION_PIN = 0xFF;
     constexpr uint8_t RS485_TURNAROUND_US = 200;
 }
+
+#define DEBUG_ENABLED 0 // 1 for enabled, 0 for disabled
+
+#if DEBUG_ENABLED
+#define DEBUG_PRINT(x) Serial.print(x)
+#define DEBUG_PRINTLN(x) Serial.println(x)
+
+#else
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+
+#endif
