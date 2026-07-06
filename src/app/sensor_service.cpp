@@ -19,10 +19,13 @@ void SensorService::loop() {
     {
         soil1Percent = soil1.readPercent();
         soil2Percent = soil2.readPercent();
-        DEBUG_PRINT(F("Request Received. S1: "));
+
+        // Debug output src/config/config.h
+        DEBUG_PRINT(F("DEBUG: "));
         DEBUG_PRINT(soil1Percent);
-        DEBUG_PRINT(F(" | S2: "));
+        DEBUG_PRINT(F(","));
         DEBUG_PRINTLN(soil2Percent);
+
         rs485.sendPacket(soil1Percent, soil2Percent);
     }
 }
