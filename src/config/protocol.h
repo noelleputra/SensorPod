@@ -4,5 +4,5 @@
 
 namespace protocol {
     constexpr char REQUEST[] = "R";
-    constexpr char PREFIX[]  = "SensorPod";
+    constexpr char PREFIX[]  = "SP";
 }
