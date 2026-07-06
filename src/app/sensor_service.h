@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "driver/soil_sensor.h"
+#include "drivers/soil_sensor.h"
 #include "communication/rs485.h"
 #include "config.h"
 
@@ -16,6 +16,6 @@ private:
     soilSensor soil2;
     Rs485 rs485;
 
-    uint8_t soil1Value = 0;
-    uint8_t soil2Value = 0;
+    uint8_t soil1Percent = 0;
+    uint8_t soil2Percent = 0;
 };
