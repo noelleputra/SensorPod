@@ -1,14 +1,14 @@
 #pragma once
 
 #include <Arduino.h>
-#include "Config.h"
+#include "config.h"
 
-class UART
+class Rs485
 {
 public:
     void begin(
         long baud,
-        uint8_t dirPin = Config::NO_DIRECTION_PIN
+        uint8_t dirPin = config::NO_DIRECTION_PIN
     );
     bool requestReceived();
     void sendPacket(

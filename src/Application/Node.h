@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include "../Driver/SoilSensor.h"
-#include "../Communication/UART.h"
-#include "../../include/Pins.h"
+#include "driver/soil_sensor.h"
+#include "communication/rs485.h"
+#include "config.h"
 
 class Node
 {
@@ -12,9 +12,9 @@ public:
     void loop();
 
 private:
-    SoilSensor soil1;
-    SoilSensor soil2;
-    UART uart;
+    soilSensor soil1;
+    soilSensor soil2;
+    Rs485 rs485;
 
     uint8_t soil1Value = 0;
     uint8_t soil2Value = 0;

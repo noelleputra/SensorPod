@@ -2,10 +2,10 @@
 
 #include <Arduino.h>
 
-class SoilSensor
+class soilSensor
 {
 public:
-    SoilSensor(uint8_t analogPin, uint8_t powerPin);
+    soilSensor(uint8_t analogPin, uint8_t powerPin);
     void begin();
     int readRaw();
     uint8_t readPercent();

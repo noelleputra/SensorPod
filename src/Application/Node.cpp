@@ -1,25 +1,23 @@
-#include "Node.h"
-#include "Debug.h"
-#include "Config.h"
-#include <avr/wdt.h>
+#include "node.h"
+#include "debug.h"
+#include "config.h"
 
 Node::Node()
-    : soil1(Pins::Soil1, Pins::SoilPower1),
-      soil2(Pins::Soil2, Pins::SoilPower2)
+    : soil1(config::pins::SOIL1, config::pins::SOIL_POWER),
+      soil2(config::pins::SOIL2, config::pins::SOIL_POWER)
 {
 }
 
 void Node::begin()
 {
-    wdt_enable(WDTO_8S);
     soil1.begin();
     soil2.begin();
-    uart.begin(Config::UART_BAUD, Pins::RS485Dir);
+    rs485.begin(config::UART_BAUD, config::pins::RS485Dir);
 }
 
 void Node::loop()
 {
-    if (uart.requestReceived())
+    if (rs485.requestReceived())
     {
         soil1Value = soil1.readPercent();
         soil2Value = soil2.readPercent();
@@ -27,8 +25,7 @@ void Node::loop()
         DEBUG_PRINT(soil1Value);
         DEBUG_PRINT(F(" | S2: "));
         DEBUG_PRINTLN(soil2Value);
-        uart.sendPacket(soil1Value, soil2Value);
+        rs485.sendPacket(soil1Value, soil2Value);
     }
-    wdt_reset();
 }
 
