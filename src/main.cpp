@@ -1,14 +1,15 @@
 #include <Arduino.h>
-#include "application/node.h"
+#include "app/sensor_service.h"
 #include <avr/wdt.h>
 
-Node node;
+SensorService sensorService;
+
 void setup() {
   wdt_enable(WDTO_8S);
-  node.begin();
+  sensorService.begin();
 }
 
 void loop() {
-  node.loop();
+  sensorService.loop();
   wdt_reset();
 }

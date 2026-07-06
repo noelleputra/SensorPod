@@ -3,10 +3,10 @@
 #include "communication/rs485.h"
 #include "config.h"
 
-class Node
+class SensorService
 {
 public:
-    Node();
+    SensorService();
 
     void begin();
     void loop();
