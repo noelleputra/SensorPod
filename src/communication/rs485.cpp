@@ -41,14 +41,20 @@ void Rs485::setReceiveMode() {
 bool Rs485::requestReceived() {
     static char line[config::UART_BUFFER_SIZE];
     static size_t index = 0;
+    static unsigned long lastByteTime = 0;
 
     while (Serial.available()) {
         char incoming = Serial.read();
         if (incoming == '\r') continue;
         if (incoming == '\n') {
-            if (index == 0) continue;
+            if (index == 0) {
+                index = 0;
+                lastByteTime = 0;
+                continue;
+            }
             line[index] = '\0';
             index = 0;
+            lastByteTime = 0;
             return isRequestForThisNode(line);
         }
         if (index < (sizeof(line) - 1)) {
@@ -56,7 +62,16 @@ bool Rs485::requestReceived() {
         } else {
             index = 0;
         }
+        lastByteTime = millis();
     }
+
+    if (index > 0 && (millis() - lastByteTime) > 20) {
+        line[index] = '\0';
+        index = 0;
+        lastByteTime = 0;
+        return isRequestForThisNode(line);
+    }
+
     return false;
 }
 
