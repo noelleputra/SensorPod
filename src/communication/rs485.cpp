@@ -85,7 +85,9 @@ void Rs485::sendPacket(uint8_t soil1, uint8_t soil2) {
     Serial.write(':');
     Serial.print(soil1);
     Serial.write(',');
-    Serial.println(soil2);
+    Serial.print(soil2);
+    Serial.write('\r');
+    Serial.write('\n');
 
     Serial.flush();
     delayMicroseconds(config::RS485_TURNAROUND_US);
