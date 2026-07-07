@@ -12,14 +12,42 @@
 ## 🛠️ Hardware Requirements
 
 - **Atmega328 Pro Mini (3.3V 8MHz )** 
-- **ESP32-C3 Super Mini Developer Board**
 - **2x Capacitive Moisture Sensor V2**
+- **MAX3485 RS485 Protocol**
+- **3-12v - 3v Regulator** 
 
-## 🚀 Getting Started
-This project still under development!
+## 🚀 Features
+- 2 Capacitive Soil Moisture Sensor V2
+- RS485 Communication
+- Configurable Node ID
+- Low cost
+- Designed for PlantPod ecosystem
 
-### Prerequisites
-This project still under development!
+### Structure
+src/
+   app/
+   Application Logic
+   
+   communication/
+   UART to RS485 Protocol Communication
+
+   drivers/
+   Hardware Drivers ( Sensor )   
+
+   config/
+   Configuration
+
+   main.cpp
+
+### Roadmap
+✔ RS485
+✔ Multi Node
+✔ Node ID
+✔ EEPROM
+□ Calibration
+□ CRC
+□ OTA (future)
+□ Sleep mode
 
 ### Installation
 1. **Clone the repository**
@@ -27,6 +55,7 @@ This project still under development!
    git clone https://github.com/noelleputra/SensorPod.git
    cd SensorPod
    ```
+   
 ## 🔌 Pin Configuration
 This project still under development!
 
