@@ -1,6 +1,6 @@
 #include "rs485.h"
 #include "config/config.h"
-#include "config/protocol.h"
+#include "protocol/protocol.h"
 
 namespace {
     bool isRequestForThisNode(const char *line) {
@@ -25,51 +25,78 @@ void Rs485::begin(long baud, uint8_t dirPin) {
         setReceiveMode();
     }
     Serial.begin(baud);
+    delay(100);
 }
 
 void Rs485::setTransmitMode() {
     if (dirPin != config::NO_DIRECTION_PIN) {
         digitalWrite(dirPin, HIGH);
     }
+    delayMicroseconds(config::RS485_TURNAROUND_US);
 }
 
 void Rs485::setReceiveMode() {
     if (dirPin != config::NO_DIRECTION_PIN) {
         digitalWrite(dirPin, LOW);
     }
+    delayMicroseconds(config::RS485_TURNAROUND_US);
 }
 
 bool Rs485::requestReceived() {
     static char line[config::UART_BUFFER_SIZE];
     static size_t index = 0;
     static unsigned long lastByteTime = 0;
+    static bool overflowed = false;
 
     while (Serial.available()) {
         char incoming = Serial.read();
         if (incoming == '\r') continue;
+
         if (incoming == '\n') {
-            if (index == 0) {
-                index = 0;
+            const bool wasOverflowed = overflowed;
+            overflowed = false;
+
+            if (index == 0 && !wasOverflowed) {
                 lastByteTime = 0;
                 continue;
             }
+
             line[index] = '\0';
             index = 0;
             lastByteTime = 0;
+
+            // Line exceeded buffer capacity: it's malformed/truncated,
+            // discard it instead of parsing a partial, misleading string.
+            if (wasOverflowed) {
+                return false;
+            }
             return isRequestForThisNode(line);
         }
-        if (index < (sizeof(line) - 1)) {
-            line[index++] = incoming;
-        } else {
-            index = 0;
+
+        if (!overflowed) {
+            if (index < (sizeof(line) - 1)) {
+                line[index++] = incoming;
+            } else {
+                // Buffer full: mark overflow and keep consuming bytes
+                // until the next '\n', instead of resetting mid-token
+                // (which would let the tail of this line be misread as
+                // the start of the next command).
+                overflowed = true;
+            }
         }
+
         lastByteTime = millis();
     }
 
     if (index > 0 && (millis() - lastByteTime) > 20) {
         line[index] = '\0';
         index = 0;
+        const bool wasOverflowed = overflowed;
+        overflowed = false;
         lastByteTime = 0;
+        if (wasOverflowed) {
+            return false;
+        }
         return isRequestForThisNode(line);
     }
 
@@ -78,7 +105,6 @@ bool Rs485::requestReceived() {
 
 void Rs485::sendPacket(uint8_t soil1, uint8_t soil2) {
     setTransmitMode();
-    delayMicroseconds(config::RS485_TURNAROUND_US);
 
     Serial.print(protocol::PREFIX);
     Serial.print(config::NODE_ID);

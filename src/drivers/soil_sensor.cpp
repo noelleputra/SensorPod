@@ -3,41 +3,51 @@
 #include "config/config.h"
 #include "config/sensor.h"
 
-soilSensor::soilSensor(
-    uint8_t analogPin,
-    uint8_t powerPin)
-
-    : analogPin(analogPin),
-      powerPin(powerPin)
+soilSensor::soilSensor(uint8_t analogPin)
+    : analogPin(analogPin)
 {
 }
 
 void soilSensor::begin()
 {
     pinMode(analogPin, INPUT);
-    pinMode(powerPin, OUTPUT);
-    digitalWrite(powerPin, LOW);
     analogReference(DEFAULT);
 }
 
-int soilSensor::readRaw()
+void soilSensor::beginAsync()
 {
-    digitalWrite(powerPin, HIGH);
-    delay(sensor::SENSOR_WARMUP_MS);
+    sampleCount = 0;
+    lastSampleTime = millis();
+}
 
-    uint16_t samples[sensor::SENSOR_SAMPLE] = {0};
-    for (size_t i = 0; i < static_cast<size_t>(sensor::SENSOR_SAMPLE); ++i)
+void soilSensor::takeSample()
+{
+    if (sampleCount >= sensor::SENSOR_SAMPLE)
     {
-        samples[i] = static_cast<uint16_t>(analogRead(analogPin));
-        if (i < static_cast<size_t>(sensor::SENSOR_SAMPLE) - 1u)
-        {
-            delay(sensor::SENSOR_SAMPLE_DELAY_MS);
-        }
+        return; // already done, nothing to do
     }
 
-    digitalWrite(powerPin, LOW);
+    const unsigned long now = millis();
 
-    // Discard the lowest and highest values to reduce noise influence.
+    // First sample fires immediately (lastSampleTime was just set in
+    // beginAsync()); subsequent samples wait SENSOR_SAMPLE_DELAY_MS apart.
+    if (sampleCount != 0 && (now - lastSampleTime) < sensor::SENSOR_SAMPLE_DELAY_MS)
+    {
+        return;
+    }
+
+    samples[sampleCount++] = static_cast<uint16_t>(analogRead(analogPin));
+    lastSampleTime = now;
+}
+
+bool soilSensor::isDone() const
+{
+    return sampleCount >= sensor::SENSOR_SAMPLE;
+}
+
+uint8_t soilSensor::computePercent()
+{
+    // Simple insertion sort (small, fixed-size array).
     for (size_t i = 0; i < static_cast<size_t>(sensor::SENSOR_SAMPLE) - 1u; ++i)
     {
         for (size_t j = i + 1u; j < static_cast<size_t>(sensor::SENSOR_SAMPLE); ++j)
@@ -52,19 +62,27 @@ int soilSensor::readRaw()
     }
 
     uint32_t total = 0;
-    for (size_t i = static_cast<size_t>(sensor::SENSOR_DISCARD_LOW); i < static_cast<size_t>(sensor::SENSOR_SAMPLE) - static_cast<size_t>(sensor::SENSOR_DISCARD_HIGH); ++i)
+    for (size_t i = static_cast<size_t>(sensor::SENSOR_DISCARD_LOW);
+         i < static_cast<size_t>(sensor::SENSOR_SAMPLE) - static_cast<size_t>(sensor::SENSOR_DISCARD_HIGH);
+         ++i)
     {
         total += samples[i];
     }
 
-    const size_t validCount = static_cast<size_t>(sensor::SENSOR_SAMPLE) - static_cast<size_t>(sensor::SENSOR_DISCARD_LOW) - static_cast<size_t>(sensor::SENSOR_DISCARD_HIGH);
-    return static_cast<int>(total / validCount);
-}
+    const size_t validCount = static_cast<size_t>(sensor::SENSOR_SAMPLE)
+        - static_cast<size_t>(sensor::SENSOR_DISCARD_LOW)
+        - static_cast<size_t>(sensor::SENSOR_DISCARD_HIGH);
 
-uint8_t soilSensor::readPercent()
-{
-    const int raw = readRaw();
+    const int raw = static_cast<int>(total / validCount);
+
     int percent = map(raw, sensor::ADC_DRY, sensor::ADC_WET, 0, 100);
     percent = constrain(percent, 0, 100);
-    return static_cast<uint8_t>(percent);
+
+    cachedPercent = static_cast<uint8_t>(percent);
+    return cachedPercent;
+}
+
+uint8_t soilSensor::getPercent() const
+{
+    return cachedPercent;
 }
