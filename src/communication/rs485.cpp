@@ -18,27 +18,21 @@ namespace {
     }
 }
 
-void Rs485::begin(long baud, uint8_t dirPin) {
-    this->dirPin = dirPin;
-    if (dirPin != config::NO_DIRECTION_PIN) {
-        pinMode(dirPin, OUTPUT);
-        setReceiveMode();
-    }
+void Rs485::begin(long baud, uint8_t enPin) {
+    this->enPin = enPin;
+    pinMode(enPin, OUTPUT);
+    setReceiveMode();
     Serial.begin(baud);
     delay(100);
 }
 
 void Rs485::setTransmitMode() {
-    if (dirPin != config::NO_DIRECTION_PIN) {
-        digitalWrite(dirPin, HIGH);
-    }
+    digitalWrite(enPin, HIGH);
     delayMicroseconds(config::RS485_TURNAROUND_US);
 }
 
 void Rs485::setReceiveMode() {
-    if (dirPin != config::NO_DIRECTION_PIN) {
-        digitalWrite(dirPin, LOW);
-    }
+    digitalWrite(enPin, LOW);
     delayMicroseconds(config::RS485_TURNAROUND_US);
 }
 
