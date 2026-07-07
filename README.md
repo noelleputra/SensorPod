@@ -25,29 +25,29 @@
 
 ### Structure
 src/
-   app/
-   Application Logic
+   app/ <br/>
+   Application Logic <br/>
    
-   communication/
-   UART to RS485 Protocol Communication
+   communication/ <br/>
+   UART to RS485 Protocol Communication <br/>
 
-   drivers/
-   Hardware Drivers ( Sensor )   
+   drivers/ <br/>
+   Hardware Drivers (Sensor) <br/>   
 
-   config/
-   Configuration
+   config/ <br/>
+   Configuration <br/>
 
-   main.cpp
+   main.cpp <br/>
 
 ### Roadmap
-✔ RS485
-✔ Multi Node
-✔ Node ID
-✔ EEPROM
-□ Calibration
-□ CRC
-□ OTA (future)
-□ Sleep mode
+✔ RS485 <br/>
+✔ Multi Node <br/>
+✔ Node ID <br/>
+✔ EEPROM <br/>
+□ Calibration <br/>
+□ CRC <br/>
+□ OTA (future) <br/>
+□ Sleep mode <br/>
 
 ### Installation
 1. **Clone the repository**
@@ -55,7 +55,7 @@ src/
    git clone https://github.com/noelleputra/SensorPod.git
    cd SensorPod
    ```
-   
+
 ## 🔌 Pin Configuration
 This project still under development!
 
