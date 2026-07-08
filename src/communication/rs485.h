@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include "config/config.h"
-#include "protocol/packet.h"
+#include "protocol/protocol.h"
 
 class Rs485 {
 public:

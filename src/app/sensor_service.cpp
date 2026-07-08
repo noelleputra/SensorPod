@@ -2,7 +2,7 @@
 #include "config/config.h"
 #include "config/pin.h"
 #include "config/sensor.h"
-#include "protocol/packet.h"
+#include "protocol/protocol.h"
 
 SensorService::SensorService()
     : soil1(pin::SOIL1),
