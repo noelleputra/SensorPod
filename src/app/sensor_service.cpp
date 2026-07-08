@@ -2,6 +2,7 @@
 #include "config/config.h"
 #include "config/pin.h"
 #include "config/sensor.h"
+#include "protocol/packet.h"
 
 SensorService::SensorService()
     : soil1(pin::SOIL1),
@@ -59,15 +60,16 @@ void SensorService::loop()
         {
             digitalWrite(pin::SOIL_POWER, LOW);
 
-            soil1Percent = soil1.computePercent();
-            soil2Percent = soil2.computePercent();
+            const uint8_t soil1Percent = soil1.computePercent();
+            const uint8_t soil2Percent = soil2.computePercent();
 
             DEBUG_PRINT(F("DEBUG: "));
             DEBUG_PRINT(soil1Percent);
             DEBUG_PRINT(F(","));
             DEBUG_PRINTLN(soil2Percent);
 
-            rs485.sendPacket(soil1Percent, soil2Percent);
+            const protocol::SensorPacket packet{config::NODE_ID, soil1Percent, soil2Percent};
+            rs485.sendPacket(packet);
 
             requestPending = false;
             state = State::IDLE;

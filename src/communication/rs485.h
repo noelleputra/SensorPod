@@ -2,12 +2,13 @@
 
 #include <Arduino.h>
 #include "config/config.h"
+#include "protocol/packet.h"
 
 class Rs485 {
 public:
     void begin(long baud, uint8_t enPin);
     bool requestReceived();
-    void sendPacket(uint8_t soil1, uint8_t soil2);
+    void sendPacket(const protocol::SensorPacket &packet);
 
 private:
     void setTransmitMode();

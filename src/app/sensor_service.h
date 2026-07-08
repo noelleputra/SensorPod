@@ -27,7 +27,4 @@ private:
     State state = State::IDLE;
     bool requestPending = false;
     unsigned long stateStartTime = 0;
-
-    uint8_t soil1Percent = 0;
-    uint8_t soil2Percent = 0;
 };

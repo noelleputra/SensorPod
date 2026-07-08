@@ -97,15 +97,15 @@ bool Rs485::requestReceived() {
     return false;
 }
 
-void Rs485::sendPacket(uint8_t soil1, uint8_t soil2) {
+void Rs485::sendPacket(const protocol::SensorPacket &packet) {
     setTransmitMode();
 
     Serial.print(protocol::PREFIX);
-    Serial.print(config::NODE_ID);
+    Serial.print(packet.nodeId);
     Serial.write(':');
-    Serial.print(soil1);
+    Serial.print(packet.soil1);
     Serial.write(',');
-    Serial.print(soil2);
+    Serial.print(packet.soil2);
     Serial.write('\r');
     Serial.write('\n');
 
