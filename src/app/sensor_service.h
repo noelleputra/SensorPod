@@ -22,6 +22,8 @@ private:
 
     soilSensor soil1;
     soilSensor soil2;
+    soilSensor soil3;
+    soilSensor soil4;
     Rs485 rs485;
 
     State state = State::IDLE;

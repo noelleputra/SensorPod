@@ -106,6 +106,10 @@ void Rs485::sendPacket(const protocol::SensorPacket &packet) {
     Serial.print(packet.soil1);
     Serial.write(',');
     Serial.print(packet.soil2);
+    Serial.write(',');
+    Serial.print(packet.soil3);
+    Serial.write(',');
+    Serial.print(packet.soil4);
     Serial.write('\r');
     Serial.write('\n');
 

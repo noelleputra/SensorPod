@@ -10,5 +10,7 @@ namespace protocol {
         uint8_t nodeId;
         uint8_t soil1;
         uint8_t soil2;
+        uint8_t soil3;
+        uint8_t soil4;
     };
 }

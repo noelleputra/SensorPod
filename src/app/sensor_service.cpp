@@ -6,7 +6,9 @@
 
 SensorService::SensorService()
     : soil1(pin::SOIL1),
-      soil2(pin::SOIL2)
+      soil2(pin::SOIL2),
+      soil3(pin::SOIL3),
+      soil4(pin::SOIL4)
 {
 }
 
@@ -14,9 +16,13 @@ void SensorService::begin()
 {
     soil1.begin();
     soil2.begin();
+    soil3.begin();
+    soil4.begin();
 
-    pinMode(pin::SOIL_POWER, OUTPUT);
-    digitalWrite(pin::SOIL_POWER, LOW);
+    pinMode(pin::SOIL_POWER_1_2, OUTPUT);
+    digitalWrite(pin::SOIL_POWER_1_2, LOW);
+    pinMode(pin::SOIL_POWER_3_4, OUTPUT);
+    digitalWrite(pin::SOIL_POWER_3_4, LOW);
 
     rs485.begin(config::UART_BAUD, pin::RS485_EN_PIN);
 }
@@ -37,7 +43,12 @@ void SensorService::loop()
     case State::IDLE:
         if (requestPending)
         {
-            digitalWrite(pin::SOIL_POWER, HIGH);
+            // Both power rails must come up together: soil3/soil4 sit on
+            // SOIL_POWER_3_4, which previously was only ever set LOW
+            // (never powered), so those two sensors always read floating
+            // ADC noise instead of real moisture.
+            digitalWrite(pin::SOIL_POWER_1_2, HIGH);
+            digitalWrite(pin::SOIL_POWER_3_4, HIGH);
             stateStartTime = now;
             state = State::WARMUP;
         }
@@ -48,6 +59,8 @@ void SensorService::loop()
         {
             soil1.beginAsync();
             soil2.beginAsync();
+            soil3.beginAsync();
+            soil4.beginAsync();
             state = State::SAMPLING;
         }
         break;
@@ -55,20 +68,30 @@ void SensorService::loop()
     case State::SAMPLING:
         soil1.takeSample();
         soil2.takeSample();
+        soil3.takeSample();
+        soil4.takeSample();
 
-        if (soil1.isDone() && soil2.isDone())
+        if (soil1.isDone() && soil2.isDone() && soil3.isDone() && soil4.isDone())
         {
-            digitalWrite(pin::SOIL_POWER, LOW);
+            digitalWrite(pin::SOIL_POWER_1_2, LOW);
+            digitalWrite(pin::SOIL_POWER_3_4, LOW);
 
             const uint8_t soil1Percent = soil1.computePercent();
             const uint8_t soil2Percent = soil2.computePercent();
+            const uint8_t soil3Percent = soil3.computePercent();
+            const uint8_t soil4Percent = soil4.computePercent();
 
             DEBUG_PRINT(F("DEBUG: "));
             DEBUG_PRINT(soil1Percent);
             DEBUG_PRINT(F(","));
             DEBUG_PRINTLN(soil2Percent);
+            DEBUG_PRINT(F(","));
+            DEBUG_PRINTLN(soil3Percent);
+            DEBUG_PRINT(F(","));
+            DEBUG_PRINTLN(soil4Percent);
+            
 
-            const protocol::SensorPacket packet{config::NODE_ID, soil1Percent, soil2Percent};
+            const protocol::SensorPacket packet{config::NODE_ID, soil1Percent, soil2Percent, soil3Percent, soil4Percent};
             rs485.sendPacket(packet);
 
             requestPending = false;
