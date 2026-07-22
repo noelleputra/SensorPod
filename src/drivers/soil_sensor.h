@@ -34,6 +34,19 @@ public:
     // Last computed percentage (cached, doesn't trigger a new read).
     uint8_t getPercent() const;
 
+    // Sets this sensor's own dry/wet ADC endpoints, replacing the
+    // firmware-default sensor::ADC_DRY/ADC_WET used by computePercent().
+    // This is what makes per-sensor calibration actually take effect.
+    void setCalibration(uint16_t dryAdc, uint16_t wetAdc);
+
+    // Blocking averaged raw ADC read, for interactive calibration only
+    // (NOT used by the normal async read cycle). Power to this sensor
+    // must already be applied and settled -- the caller (calibration
+    // mode in SensorService) is responsible for that, since during
+    // calibration the power rail is held on continuously rather than
+    // being toggled per-read like the normal cycle does.
+    uint16_t readRawBlocking() const;
+
 private:
     const uint8_t analogPin;
 
@@ -42,4 +55,7 @@ private:
     unsigned long lastSampleTime = 0;
 
     uint8_t cachedPercent = 0;
+
+    uint16_t dryAdc = sensor::ADC_DRY;
+    uint16_t wetAdc = sensor::ADC_WET;
 };

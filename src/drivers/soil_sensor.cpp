@@ -75,7 +75,10 @@ uint8_t soilSensor::computePercent()
 
     const int raw = static_cast<int>(total / validCount);
 
-    int percent = map(raw, sensor::ADC_DRY, sensor::ADC_WET, 0, 100);
+    // Uses THIS sensor's own dry/wet points (set via setCalibration()),
+    // not a single shared constant -- this is the actual fix for
+    // component-tolerance drift between the 4 physical sensors.
+    int percent = map(raw, dryAdc, wetAdc, 0, 100);
     percent = constrain(percent, 0, 100);
 
     cachedPercent = static_cast<uint8_t>(percent);
@@ -85,4 +88,24 @@ uint8_t soilSensor::computePercent()
 uint8_t soilSensor::getPercent() const
 {
     return cachedPercent;
+}
+
+void soilSensor::setCalibration(uint16_t newDryAdc, uint16_t newWetAdc)
+{
+    dryAdc = newDryAdc;
+    wetAdc = newWetAdc;
+}
+
+uint16_t soilSensor::readRawBlocking() const
+{
+    uint32_t total = 0;
+    for (uint8_t i = 0; i < sensor::CALIBRATION_RAW_SAMPLES; ++i)
+    {
+        total += analogRead(analogPin);
+        if (i + 1 < sensor::CALIBRATION_RAW_SAMPLES)
+        {
+            delay(sensor::CALIBRATION_RAW_SAMPLE_DELAY_MS);
+        }
+    }
+    return static_cast<uint16_t>(total / sensor::CALIBRATION_RAW_SAMPLES);
 }

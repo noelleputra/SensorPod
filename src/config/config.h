@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 namespace config {
-    constexpr uint8_t NODE_ID = 1;
+    constexpr uint8_t NODE_ID = 2;
     constexpr uint32_t UART_BAUD = 9600;
     constexpr uint8_t UART_BUFFER_SIZE = 32;
     constexpr uint32_t RS485_TURNAROUND_US = 1000;
