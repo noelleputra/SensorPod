@@ -117,23 +117,8 @@ void SensorService::handleCalibrationCommand(const char* rest)
         return;
     }
 
-    if (strcmp(rest, "DUMP") == 0)
-    {
-        const calibration::Data& cal = calibrationStore.data();
-        snprintf(reply, sizeof(reply), "%s%u:CAL:ID=%u;1=%u,%u;2=%u,%u;3=%u,%u;4=%u,%u",
-                 protocol::PREFIX, nodeIdStore.getNodeId(),
-                 nodeIdStore.getNodeId(),
-                 cal.dryAdc[0], cal.wetAdc[0],
-                 cal.dryAdc[1], cal.wetAdc[1],
-                 cal.dryAdc[2], cal.wetAdc[2],
-                 cal.dryAdc[3], cal.wetAdc[3]);
-        rs485.sendLine(reply);
-        return;
-    }
-
     if (strcmp(rest, "INFO") == 0)
     {
-        // General node health/identity summary -- separate from DUMP
         // (raw calibration numbers) so each command has one clear job.
         // Uptime is plain millis(), so it wraps back to 0 after ~49.7
         // days -- a low reading right after you'd expect a high one is
@@ -161,7 +146,7 @@ void SensorService::handleCalibrationCommand(const char* rest)
         return;
     }
 
-    // Remaining valid forms are "SETID:<n>", "RAW:<n>", "DRY:<n>",
+    // Remaining valid forms are "SET:<n>", "RAW:<n>", "DRY:<n>",
     // "WET:<n>" -- all share the same "<ACTION>:<number>" shape, so parse
     // the action once and branch on it.
     const char* colon = strchr(rest, ':');
@@ -179,7 +164,7 @@ void SensorService::handleCalibrationCommand(const char* rest)
     memcpy(action, rest, actionLen);
     action[actionLen] = '\0';
 
-    if (strcmp(action, "SETID") == 0)
+    if (strcmp(action, "SET") == 0)
     {
         // Reconfigures this unit's persistent node id. Addressed using
         // whatever id this node is CURRENTLY responding as (matched
@@ -188,7 +173,7 @@ void SensorService::handleCalibrationCommand(const char* rest)
         // IMPORTANT: only ever have ONE unconfigured/to-be-renumbered
         // board connected to the bus at a time when doing this -- two
         // boards both still on the same default id would both answer
-        // the same SETID command at once and collide.
+        // the same SET command at once and collide.
         const int newId = atoi(colon + 1);
         if (newId < 1 || newId > 254)
         {

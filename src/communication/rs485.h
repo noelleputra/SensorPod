@@ -22,7 +22,7 @@ public:
 
     // Sends an arbitrary line (CRLF-terminated), wrapped in the same
     // transmit/receive turnaround as sendPacket(). Used for calibration
-    // replies (raw readings, confirmations, dumps) that don't fit the
+    // replies (raw readings, confirmations) that don't fit the
     // fixed SensorPacket shape.
     void sendLine(const char* line);
 
