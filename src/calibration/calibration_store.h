@@ -24,7 +24,7 @@ namespace calibration {
 // Thin EEPROM-backed wrapper around per-sensor dry/wet calibration
 // points. Persists across power loss/reboot so calibration only needs
 // to be done once per physical sensor, not once per firmware flash.
-class calibrationStore {
+class CalibrationStore {
 public:
     // Loads from EEPROM. Falls back to firmware-default ADC_DRY/ADC_WET
     // (see config/sensor.h) for all 4 sensors if the stored data's magic

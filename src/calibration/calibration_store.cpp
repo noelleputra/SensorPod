@@ -3,7 +3,7 @@
 #include <EEPROM.h>
 #include "config/sensor.h"
 
-void calibrationStore::begin()
+void CalibrationStore::begin()
 {
     EEPROM.get(calibration::EEPROM_ADDRESS, data_);
 
@@ -15,7 +15,7 @@ void calibrationStore::begin()
     }
 }
 
-void calibrationStore::resetToDefaults()
+void CalibrationStore::resetToDefaults()
 {
     data_.magic = calibration::MAGIC;
     for (uint8_t i = 0; i < calibration::SENSOR_COUNT; ++i)
@@ -26,21 +26,21 @@ void calibrationStore::resetToDefaults()
     save();
 }
 
-void calibrationStore::setDry(uint8_t sensorIndex, uint16_t rawAdc)
+void CalibrationStore::setDry(uint8_t sensorIndex, uint16_t rawAdc)
 {
     if (sensorIndex >= calibration::SENSOR_COUNT) return;
     data_.dryAdc[sensorIndex] = rawAdc;
     save();
 }
 
-void calibrationStore::setWet(uint8_t sensorIndex, uint16_t rawAdc)
+void CalibrationStore::setWet(uint8_t sensorIndex, uint16_t rawAdc)
 {
     if (sensorIndex >= calibration::SENSOR_COUNT) return;
     data_.wetAdc[sensorIndex] = rawAdc;
     save();
 }
 
-void calibrationStore::save()
+void CalibrationStore::save()
 {
     // EEPROM.put() only actually writes bytes that changed (the
     // underlying update() call compares before writing), so repeated

@@ -5,7 +5,7 @@
 namespace protocol {
     constexpr char REQUEST[] = "R";
     constexpr char CALIBRATION[] = "C";
-    constexpr char PREFIX[]  = "SP";
+    constexpr char PREFIX[]  = "N";
 
     struct SensorPacket {
         uint8_t nodeId;

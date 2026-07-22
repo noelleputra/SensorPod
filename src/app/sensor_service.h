@@ -4,6 +4,7 @@
 #include "drivers/soil_sensor.h"
 #include "communication/rs485.h"
 #include "calibration/calibration_store.h"
+#include "calibration/node_id_store.h"
 
 class SensorService
 {
@@ -26,7 +27,8 @@ private:
     soilSensor soil3;
     soilSensor soil4;
     Rs485 rs485;
-    calibrationStore calibrationStore;
+    CalibrationStore calibrationStore;
+    NodeIdStore nodeIdStore;
 
     State state = State::IDLE;
     bool requestPending = false;
@@ -43,6 +45,11 @@ private:
     // node's own soil1..soil4 pin labels). Returns nullptr if out of
     // range.
     soilSensor* sensorByIndex(uint8_t sensorIndex);
+
+    // True if this sensor's saved dry/wet points differ from the
+    // firmware defaults -- used by the INFO command to flag sensors
+    // that still haven't been calibrated.
+    bool isSensorCalibrated(uint8_t sensorIndex) const;
 
     void enterCalibrationMode();
     void exitCalibrationMode();
