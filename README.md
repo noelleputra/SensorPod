@@ -1,70 +1,92 @@
 # 🎛️ SensorPod
-> A super-modular IoT sensor node built around the ESP32 and Atmega328, designed for Smart Irrigation / Smart Farming.
+
+> A super-modular IoT sensor node built around the ATmega328, designed for Smart Irrigation / Smart Farming with RS485 communication.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-ESP32-green.svg)
-![Framework](https://img.shields.io/badge/framework-PlatformIO%20%7C%20Arduino-orange.svg)
+![Platform](https://img.shields.io/badge/platform-ATmega328-green.svg)
+![Framework](https://img.shields.io/badge/framework-Arduino%20-orange.svg)
+![Language](https://img.shields.io/badge/language-C%2B%2B-blue.svg)
 
 ## 📖 Overview
 
-**SensorPod** is an *CHEAP & MODULAR* Smart Irrigation / Smart Garden project that's focused on Farming utilities especially in Indonesia.
+**SensorPod** is an affordable, modular Smart Irrigation system optimized for farming operations, particularly in Indonesia. It features 4 capacitive soil moisture sensors connected via RS485 communication protocol, enabling multi-node deployments in distributed IoT networks.
 
-## 🛠️ Hardware Requirements
+## ⚙️ Hardware Specifications
 
-- **Atmega328 Pro Mini (3.3V 8MHz )** 
-- **2x Capacitive Moisture Sensor V2**
-- **MAX3485 RS485 Protocol**
-- **3-12v - 3v Regulator** 
+| Component | Specification |
+|-----------|---------------|
+| **Microcontroller** | ATmega328 Pro Mini (3.3V, 8MHz) |
+| **Soil Moisture Sensors** | 4x Capacitive Soil Moisture Sensor V2 |
+| **Communication** | RS485 Protocol (MAX3485) |
+| **Power Supply** | 3-12V input with 3V regulator |
+| **UART Baud Rate** | 9600 baud |
+| **Buffer Size** | 32 bytes |
 
-## 🚀 Features
-- 2 Capacitive Soil Moisture Sensor V2
-- RS485 Communication
-- Configurable Node ID
-- Low cost
-- Designed for PlantPod ecosystem
+## 🚀 Core Features
 
-### Structure
-src/
-   app/ <br/>
-   Application Logic <br/>
-   
-   communication/ <br/>
-   UART to RS485 Protocol Communication <br/>
+- ✅ **4 Soil Moisture Sensors** - Per-sensor calibration to compensate for component tolerance drift
+- ✅ **RS485 Multi-Node Communication** - Connect up to 254 nodes on a single bus
+- ✅ **Configurable Node IDs** - Persistent storage via EEPROM
+- ✅ **Per-Sensor Calibration** - Individual dry/wet point adjustment for each sensor
+- ✅ **Low Power Design** - Sensor power rails toggle on/off for efficiency
+- ✅ **Non-blocking Async Sampling** - 10-sample averaging with outlier rejection
+- ✅ **Watchdog Timer** - 8-second reset protection
+- ✅ **EEPROM Persistence** - Calibration data and node ID stored permanently
 
-   drivers/ <br/>
-   Hardware Drivers (Sensor) <br/>   
+## 📁 Project Structure
 
-   config/ <br/>
-   Configuration <br/>
-
-   main.cpp <br/>
-
-### Roadmap
-✔ RS485 <br/>
-✔ Multi Node <br/>
-✔ Node ID <br/>
-✔ EEPROM <br/>
-□ Calibration <br/>
-□ CRC <br/>
-□ OTA (future) <br/>
-□ Sleep mode <br/>
-
-### Installation
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/noelleputra/SensorPod.git
-   cd SensorPod
-   ```
 
 ## 🔌 Pin Configuration
-This project still under development!
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/NewSensorModule`)
-3. Commit your Changes (`git commit -m 'Add support for new sensor module'`)
-4. Push to the Branch (`git push origin feature/NewSensorModule`)
-5. Open a Pull Request
+| Pin | Function | Port |
+|-----|----------|------|
+| A0 | Soil Sensor 1 (Analog Input) | - |
+| A1 | Soil Sensor 2 (Analog Input) | - |
+| A2 | Soil Sensor 3 (Analog Input) | - |
+| A3 | Soil Sensor 4 (Analog Input) | - |
+| 2 | Soil Power Rail 1-2 (Digital Out) | - |
+| 3 | Soil Power Rail 3-4 (Digital Out) | - |
+| 5 | RS485 Enable (Digital Out) | - |
 
-## 📄 License
+## 📡 Communication Protocol
 
-Distributed under the MIT License. See `LICENSE` for more information.
+### Command Format
+All commands follow the pattern: `<PREFIX><NODE_ID>[:<PARAMETERS>]`
+
+### Available Commands
+
+#### Read Request
+- **Format:** `R<NODE_ID>\r\n`
+- **Example:** `R2` (Request reading from node 2)
+- **Response:** `N2:45,52,38,41` (Node 2, sensors 1-4 moisture percentages)
+
+#### Calibration Commands
+- **Enter Calibration:** `K<NODE_ID>\r\n` (Hold both power rails on)
+- **Set Dry Point:** `K<NODE_ID>:DRY:<SENSOR_INDEX>\r\n` (Store raw ADC value)
+- **Set Wet Point:** `K<NODE_ID>:WET:<SENSOR_INDEX>\r\n` (Store raw ADC value)
+- **Set Node ID:** `K<NODE_ID>:SETID:<NEW_ID>\r\n` (Persist new node ID)
+- **Calibration Info:** `K<NODE_ID>:INFO\r\n` (List calibration status)
+- **Exit Calibration:** Auto-exit after 5 minutes of inactivity
+
+### Packet Format
+```cpp
+struct SensorPacket {
+    uint8_t nodeId;       // 1-254
+    uint8_t soil1;        // Moisture % (0-100)
+    uint8_t soil2;        // Moisture % (0-100)
+    uint8_t soil3;        // Moisture % (0-100)
+    uint8_t soil4;        // Moisture % (0-100)
+};
+
+# Activate calibration mode on node 2
+K2
+
+# Place sensor 1 in dry air and capture raw value
+K2:DRY:1
+# Board will output raw ADC reading; note it down
+
+# Place sensor 1 in water and capture raw value
+K2:WET:1
+# Board will output raw ADC reading
+
+# Repeat for sensors 2, 3, 4 as needed
